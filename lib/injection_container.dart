@@ -11,6 +11,7 @@ import 'features/users/domain/usecase/create_user.dart';
 import 'features/users/domain/usecase/delete_user.dart';
 import 'features/users/domain/usecase/get_userById.dart';
 import 'features/users/domain/usecase/get_users.dart';
+import 'features/users/domain/usecase/search_user.dart';
 import 'features/users/domain/usecase/update_user.dart';
 import 'features/users/presentation/bloc/user_bloc.dart';
 
@@ -25,30 +26,32 @@ Future<void> init() async {
   getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt()));
 
   getIt.registerLazySingleton<UserRemoteDataSource>(
-    () => UserRemoteDataSourceImpl(client: getIt()),
+        () => UserRemoteDataSourceImpl(client: getIt()),
   );
 
   getIt.registerLazySingleton<UserLocalDataSource>(
-    () => UserLocalDataSourceImpl(sharedPreferences: getIt()),
+        () => UserLocalDataSourceImpl(sharedPreferences: getIt()),
   );
 
   getIt.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(
-        remoteDataSource: getIt(),
-        localDataSource: getIt(),
-        networkInfo: getIt(),
-      ));
+    remoteDataSource: getIt(),
+    localDataSource: getIt(),
+    networkInfo: getIt(),
+  ));
 
   getIt.registerLazySingleton(() => GetUsers(getIt()));
   getIt.registerLazySingleton(() => CreateUser(getIt()));
   getIt.registerLazySingleton(() => UpdateUser(getIt()));
   getIt.registerLazySingleton(() => DeleteUser(getIt()));
   getIt.registerLazySingleton(() => GetUserById(getIt()));
+  getIt.registerLazySingleton(() => SearchUsers(getIt()));
 
   getIt.registerFactory(() => UserBloc(
-        getUsers: getIt(),
-        createUser: getIt(),
-        updateUser: getIt(),
-        deleteUser: getIt(),
-        getUserById: getIt(),
-      ));
+    getUsers: getIt(),
+    createUser: getIt(),
+    updateUser: getIt(),
+    deleteUser: getIt(),
+    getUserById: getIt(),
+    searchUsers: getIt(),
+  ));
 }

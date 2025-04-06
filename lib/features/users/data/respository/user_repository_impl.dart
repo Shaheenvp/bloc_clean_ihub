@@ -22,6 +22,43 @@ class UserRepositoryImpl implements UserRepository {
   });
 
   @override
+  Future<Either<Failure, List<UserModel>>> searchUsers(String query) async {
+    try {
+      final  isConnected = await networkInfo.isConnected;
+
+      if (isConnected == true) {
+        final remoteUsers = await remoteDataSource.getUsers();
+
+        final filteredUsers = remoteUsers.where((user) {
+          final nameMatches = user.name.toLowerCase().contains(query.toLowerCase());
+          final emailMatches = user.email.toLowerCase().contains(query.toLowerCase());
+          return nameMatches || emailMatches;
+        }).toList();
+
+        return Right(filteredUsers);
+      } else {
+        final localUsers = await localDataSource.getLastUsers();
+
+        final filteredUsers = localUsers.where((user) {
+          final nameMatches = user.name.toLowerCase().contains(query.toLowerCase());
+          final emailMatches = user.email.toLowerCase().contains(query.toLowerCase());
+          return nameMatches || emailMatches;
+        }).toList();
+
+        return Right(filteredUsers);
+      }
+    } on ServerException {
+      return Left(ServerFailure('Server error occurred'));
+    } on CacheException {
+      return Left(CacheFailure('Cache error occurred'));
+    } catch (e) {
+      return Left(GeneralFailure(e.toString()));
+    }
+  }
+
+
+
+  @override
   Future<Either<Failure, List<UserModel>>> getUsers({int page = 1}) async {
     if (await networkInfo.isConnected()) {
       try {

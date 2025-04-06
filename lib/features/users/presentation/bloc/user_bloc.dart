@@ -7,6 +7,7 @@ import '../../domain/usecase/create_user.dart';
 import '../../domain/usecase/delete_user.dart';
 import '../../domain/usecase/get_userById.dart';
 import '../../domain/usecase/get_users.dart';
+import '../../domain/usecase/search_user.dart';
 import '../../domain/usecase/update_user.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
@@ -15,6 +16,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   final UpdateUser updateUser;
   final DeleteUser deleteUser;
   final GetUserById getUserById;
+  final SearchUsers searchUsers;
 
   int _currentPage = 1;
   final List<UserModel> _allUsers = [];
@@ -26,6 +28,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     required this.updateUser,
     required this.deleteUser,
     required this.getUserById,
+    required this.searchUsers,
   }) : super(UserInitial()) {
     on<LoadUsers>(_onLoadUsers);
     on<LoadMoreUsers>(_onLoadMoreUsers);
@@ -33,6 +36,33 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UpdateUserEvent>(_onUpdateUser);
     on<DeleteUserEvent>(_onDeleteUser);
     on<LoadUser>(_onLoadUserById);
+    on<SearchUsersEvent>(_onSearchUsers);
+  }
+
+  Future<void> _onSearchUsers(SearchUsersEvent event, Emitter<UserState> emit) async {
+    emit(UsersLoading());
+
+    if (event.query.isEmpty) {
+      _currentPage = 1;
+      add(LoadUsers(isInitialLoad: true));
+      return;
+    }
+
+    if (_allUsers.isNotEmpty) {
+      final filteredUsers = _allUsers.where((user) {
+        return user.name.toLowerCase().contains(event.query.toLowerCase()) ||
+            user.email.toLowerCase().contains(event.query.toLowerCase());
+      }).toList();
+
+      emit(UsersLoaded(
+        filteredUsers,
+        currentPage: _currentPage,
+        hasReachedMax: true,
+        isFiltered: true,
+      ));
+    } else {
+      emit(UserError('No users available for search'));
+    }
   }
 
   Future<void> _onAddUser(AddUser event, Emitter<UserState> emit) async {
@@ -109,7 +139,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   Future<void> _onLoadMoreUsers(
       LoadMoreUsers event, Emitter<UserState> emit) async {
-    // Don't load more if we've reached the max
     if (_hasReachedMax) return;
 
     _currentPage++;
@@ -121,7 +150,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       final result = await getUsers(page: _currentPage);
 
       result.fold((failure) {
-        _currentPage--; // Revert page increment on failure
+        _currentPage--;
         emit(UserError(failure.message));
       }, (users) {
         if (users.isEmpty) {
@@ -133,6 +162,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       });
     }
   }
+
 
   Future<void> _onDeleteUser(
       DeleteUserEvent event, Emitter<UserState> emit) async {
@@ -149,7 +179,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
             emit(UsersLoaded(updatedUsers));
           }
           emit(UserOperationSuccess('User deleted successfully'));
-          add(LoadUsers()); // Refresh the list
+          add(LoadUsers());
         },
       );
     } catch (e) {

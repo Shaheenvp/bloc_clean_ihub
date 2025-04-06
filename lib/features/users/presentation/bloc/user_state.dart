@@ -19,9 +19,10 @@ class UsersLoaded extends UserState {
   final List<UserModel> users;
   final int currentPage;
   final bool hasReachedMax;
+  final bool isFiltered;
 
   const UsersLoaded(this.users,
-      {this.currentPage = 1, this.hasReachedMax = false});
+      {this.currentPage = 1, this.hasReachedMax = false, this.isFiltered = false, });
 }
 
 class SingleUserLoaded extends UserState {

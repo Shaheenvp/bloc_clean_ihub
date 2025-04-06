@@ -31,3 +31,7 @@ class ValidationFailure extends Failure {
 class NotFoundFailure extends Failure {
   const NotFoundFailure(super.message);
 }
+
+class GeneralFailure extends Failure {
+  const GeneralFailure(super.message);
+}

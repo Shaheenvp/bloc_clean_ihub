@@ -28,7 +28,7 @@ class ActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10.r),
             border: Border.all(color: Colors.grey.shade200),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

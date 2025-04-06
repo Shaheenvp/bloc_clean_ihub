@@ -52,3 +52,12 @@ class LoadUser extends UserEvent {
   @override
   List<Object> get props => [userId];
 }
+
+class SearchUsersEvent extends UserEvent {
+  final String query;
+
+  const SearchUsersEvent(this.query);
+
+  @override
+  List<Object> get props => [query];
+}

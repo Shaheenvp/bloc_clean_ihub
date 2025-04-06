@@ -12,4 +12,6 @@ abstract class UserRepository {
   Future<Either<Failure, UserModel>> updateUser(UserModel user);
 
   Future<Either<Failure, void>> deleteUser(int userId);
+
+  Future<Either<Failure, List<UserModel>>> searchUsers(String query);
 }

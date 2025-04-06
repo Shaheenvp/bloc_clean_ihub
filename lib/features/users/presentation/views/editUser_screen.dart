@@ -7,8 +7,8 @@ import '../../domain/entities/user_entity.dart';
 import '../bloc/user_bloc.dart';
 import '../bloc/user_event.dart';
 import '../bloc/user_state.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../core/theme/ui_consts.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/ui_consts.dart';
 
 class EditUserScreen extends StatefulWidget {
   final int? id;
@@ -33,6 +33,7 @@ class EditUserScreen extends StatefulWidget {
 }
 
 class _EditUserScreenState extends State<EditUserScreen> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   String _selectedGender = '';
@@ -60,33 +61,39 @@ class _EditUserScreenState extends State<EditUserScreen> {
     return BlocListener<UserBloc, UserState>(
       listener: (context, state) {
         if (state is UsersLoading) {
-          _isLoading = true;
+          setState(() => _isLoading = true);
         } else if (state is UserOperationSuccess) {
-          _isLoading = false;
+          setState(() => _isLoading = false);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('User updated successfully!'),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.symmetric(
+                horizontal: UIConstants.paddingLarge,
+                vertical: UIConstants.paddingMedium,
+              ),
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(UIConstants.borderRadiusSmall),
+                borderRadius: BorderRadius.circular(UIConstants.borderRadiusSmall),
               ),
             ),
           );
           Navigator.pop(context);
         } else if (state is UserError) {
-          _isLoading = false;
+          setState(() => _isLoading = false);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error: ${state.message}'),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.symmetric(
+                horizontal: UIConstants.paddingLarge,
+                vertical: UIConstants.paddingMedium,
+              ),
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(UIConstants.borderRadiusSmall),
+                borderRadius: BorderRadius.circular(UIConstants.borderRadiusSmall),
               ),
             ),
           );
@@ -95,141 +102,261 @@ class _EditUserScreenState extends State<EditUserScreen> {
       child: Scaffold(
         backgroundColor: AppColors.primary,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.primary,
           elevation: 0,
-          title:
-              const Text('Back', style: TextStyle(color: AppColors.textLight)),
+          title: const Text(
+            'Edit User',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          titleSpacing: 0,
+          centerTitle: true,
         ),
-        body: Container(
-          width: double.infinity,
-          margin: EdgeInsets.only(top: UIConstants.paddingLarge),
-          decoration: BoxDecoration(
-            color: AppColors.cardBackground,
-            borderRadius: UIConstants.topRoundedBorderRadius,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadowColor,
-                blurRadius: 10,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: UIConstants.paddingLarge),
-              Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: UIConstants.paddingLarge),
-                child: Row(
-                  children: [
-                    Container(
-                      width: UIConstants.avatarSizeMedium,
-                      height: UIConstants.avatarSizeMedium,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLighter,
-                        shape: BoxShape.circle,
-                        boxShadow: UIConstants.buttonShadow,
-                      ),
-                      child: Icon(Icons.edit, color: AppColors.primaryDark),
-                    ),
-                    SizedBox(width: UIConstants.paddingMedium),
-                    Text(
-                      'Edit Details',
-                      style: TextStyle(
-                        fontSize: UIConstants.textSizeXLarge,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: UIConstants.paddingLarge),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: UIConstants.paddingLarge),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CommonWidgets.buildFormField(
-                        label: 'Name',
-                        controller: _nameController,
-                        icon: Icons.person,
-                        validator: (value) =>
-                            FormValidators.validateRequired(value, 'Name'),
-                      ),
-                      SizedBox(height: UIConstants.paddingLarge),
-                      CommonWidgets.buildFormField(
-                        label: 'Email Address',
-                        controller: _emailController,
-                        icon: Icons.email,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: FormValidators.validateEmail,
-                      ),
-                      SizedBox(height: UIConstants.paddingLarge),
-                      CommonWidgets.buildDropdownField<String>(
-                        label: 'Gender',
-                        value: _selectedGender,
-                        items: const [
-                          DropdownMenuItem(value: 'male', child: Text('Male')),
-                          DropdownMenuItem(
-                              value: 'female', child: Text('Female')),
-                        ],
-                        onChanged: (value) {
-                          _selectedGender = value!;
-                        },
-                        icon: Icons.people,
-                      ),
-                      SizedBox(height: UIConstants.paddingLarge),
-                      CommonWidgets.buildDropdownField<String>(
-                        label: 'Status',
-                        value: _selectedStatus,
-                        items: const [
-                          DropdownMenuItem(
-                              value: 'active', child: Text('Active')),
-                          DropdownMenuItem(
-                              value: 'inactive', child: Text('Inactive')),
-                        ],
-                        onChanged: (value) {
-                          _selectedStatus = value!;
-                        },
-                        icon: Icons.track_changes,
-                      ),
-                      const SizedBox(height: 40),
-                    ],
+        body: Stack(
+          children: [
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(top: 20),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: UIConstants.topRoundedBorderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.shadowColor,
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
                   ),
-                ),
+                ],
               ),
-              Padding(
-                padding: EdgeInsets.all(UIConstants.paddingLarge),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Area with Avatar
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(UIConstants.paddingLarge),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLighter,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.shadowColor.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.edit,
+                            color: AppColors.primaryDark,
+                            size: 40,
+                          ),
+                        ),
+                        SizedBox(height: UIConstants.paddingMedium),
+                        Text(
+                          'Edit User Account',
+                          style: TextStyle(
+                            fontSize: UIConstants.textSizeLarge,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: UIConstants.paddingSmall),
+                        Text(
+                          'Update user details below',
+                          style: TextStyle(
+                            fontSize: UIConstants.textSizeSmall,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    child: Form(
+                      key: _formKey,
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.only(
+                          left: UIConstants.paddingLarge,
+                          right: UIConstants.paddingLarge,
+                          bottom: 80,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // User Information section
+                            Text(
+                              'User Information',
+                              style: TextStyle(
+                                fontSize: UIConstants.textSizeMedium,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryDark,
+                              ),
+                            ),
+                            SizedBox(height: UIConstants.paddingMedium),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(UIConstants.borderRadiusMedium),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.shadowColor.withOpacity(0.1),
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: CommonWidgets.buildFormField(
+                                label: 'Full Name',
+                                controller: _nameController,
+                                icon: Icons.person,
+                                validator: (value) => FormValidators.validateRequired(value, 'Name'),
+                              ),
+                            ),
+                            SizedBox(height: UIConstants.paddingMedium),
+
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(UIConstants.borderRadiusMedium),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.shadowColor.withOpacity(0.1),
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: CommonWidgets.buildFormField(
+                                label: 'Email Address',
+                                controller: _emailController,
+                                icon: Icons.email,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: FormValidators.validateEmail,
+                              ),
+                            ),
+                            SizedBox(height: UIConstants.paddingLarge),
+                            Text(
+                              'User Settings',
+                              style: TextStyle(
+                                fontSize: UIConstants.textSizeMedium,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryDark,
+                              ),
+                            ),
+                            SizedBox(height: UIConstants.paddingMedium),
+                            CommonWidgets.buildDropdownField(
+                              label: 'Gender',
+                              value: _selectedGender,
+                              icon: Icons.people,
+                              items: const [
+                                DropdownMenuItem(value: 'male', child: Text('Male')),
+                                DropdownMenuItem(value: 'female', child: Text('Female')),
+                              ],
+                              onChanged: (value) {
+                                setState(() => _selectedGender = value!);
+                              },
+                            ),
+                            SizedBox(height: UIConstants.paddingMedium),
+
+                            CommonWidgets.buildDropdownField(
+                              label: 'Account Status',
+                              value: _selectedStatus,
+                              icon: Icons.toggle_on,
+                              items: [
+                                DropdownMenuItem(
+                                  value: 'active',
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.success,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text('Active'),
+                                    ],
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'inactive',
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.error,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text('Inactive'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                setState(() => _selectedStatus = value!);
+                              },
+                            ),
+                            SizedBox(height: UIConstants.paddingLarge),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: UIConstants.paddingLarge,
+                  vertical: UIConstants.paddingMedium,
+                ),
                 child: CommonWidgets.buildLoadingButton(
                   isLoading: _isLoading,
                   onPressed: _updateUser,
-                  text: 'Update Details',
+                  text: 'Update User',
                   loadingText: 'Updating...',
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   void _updateUser() {
-    final updatedUser = UserModel(
-      id: widget.id ?? 0,
-      name: _nameController.text,
-      email: _emailController.text,
-      gender: _selectedGender,
-      status: _selectedStatus,
-    );
-    context.read<UserBloc>().add(UpdateUserEvent(updatedUser));
+    if (_formKey.currentState!.validate()) {
+      final updatedUser = UserModel(
+        id: widget.id ?? 0,
+        name: _nameController.text,
+        email: _emailController.text,
+        gender: _selectedGender,
+        status: _selectedStatus,
+      );
+      context.read<UserBloc>().add(UpdateUserEvent(updatedUser));
+    }
   }
 }
